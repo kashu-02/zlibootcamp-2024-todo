@@ -1,34 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import useSWR from "swr";
+import Box from '@mui/material/Box';
+import AppBar from './components/AppBar'
+import Post from './components/Post'
+import List from './components/List'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const url = `${sessionStorage.getItem('apiUrlEndpoint') || 'http://localhost:3000'}/todo`
+  const fetcher = async (...args: any[]) => {
+    // @ts-ignore
+    const res = await fetch(...args);
+    return await res.json();
+  }
 
+  const {data, error, isLoading} = useSWR(url, fetcher)
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <>
+        <AppBar/>
+        <Box
+            my='2rem'
+            display='flex'
+            flexDirection='column'
+            justifyContent='center'
+            alignItems='center'
+        >
+          <Post/>
+          <Box
+              width='50%'
+          >
+            {error && <p>取得できませんでした</p>}
+            {isLoading && <p>Loading...</p>}
+            {!error && !isLoading && data.map((post: any, index: number) =>
+                <List post={post} key={index}/>
+            )}
+          </Box>
+
+        </Box>
+
+      </>
   )
 }
 
